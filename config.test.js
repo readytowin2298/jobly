@@ -17,11 +17,13 @@ describe("config can come from env", function () {
     delete process.env.PORT;
     delete process.env.BCRYPT_WORK_FACTOR;
     delete process.env.DATABASE_URL;
+    const test_dbs = ["postgres://postgres:test@localhost:5432/jobly_test", "postgres://lxrfybbs:AvYUcIhsNAiM3OroQ57I_cj1WXMdENn3@queenie.db.elephantsql.com:5432/lxrfybbs"]
+    const real_dbs = ["postrgres://postgres:test@localhost:5432/jobly", "postgres://nypaobfv:AIT6TTHJ-RrP1PnGK4EbDCERjoJXUL4L@queenie.db.elephantsql.com:5432/nypaobfv"]
 
-    expect(config.getDatabaseUri()).toEqual("postrgres://postgres:test@localhost:5432/jobly");
+    expect(real_dbs.indexOf(config.getDatabaseUri())).not.toEqual(-1);
     process.env.NODE_ENV = "test";
 
-    expect(config.getDatabaseUri()).toEqual("postgres://postgres:test@localhost:5432/jobly_test");
+    expect(test_dbs.indexOf(config.getDatabaseUri())).not.toEqual(-1);
   });
 })
 
