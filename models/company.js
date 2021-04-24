@@ -140,6 +140,17 @@ class Company {
 
     if (!company) throw new NotFoundError(`No company: ${handle}`);
   }
+
+  static async filter(qString) {
+    const params = new URLSearchParams(qString);
+    const name = params.get('name');
+    const max = params.get('maxEmployees');
+    const min = params.get('minEmployees');
+    let baseString = "SELECT handle, name, num_employees, description FROM companies";
+    let numParams = 0
+    if(name){baseString += `WHERE name=$1`; numParams++}
+    if(max){baseString}
+  }
 }
 
 

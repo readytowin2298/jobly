@@ -3,7 +3,7 @@ const { BadRequestError } = require("../expressError");
 // THIS NEEDS SOME GREAT DOCUMENTATION.
 
 
-// Takes an object containing data to update in database, and an object containing naming conversions between 
+// Takes an object containing data to reference in database, and an object containing naming conversions between 
 // json/js and sql; i.e.:
 // dataToUpdate = {"firstName" : "aUsersName", "email" : "fakeemail@ames.com", "isAdmin" : true}
 // jsToSql = {"firstName" : "first_name", "email" : "email", "isAdmin" : "is_admin" }
@@ -30,5 +30,6 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
     values: Object.values(dataToUpdate),
   };
 }
+
 
 module.exports = { sqlForPartialUpdate };
