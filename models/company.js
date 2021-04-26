@@ -1,7 +1,7 @@
 "use strict";
 
-const db = require("../db");
-const { BadRequestError, NotFoundError } = require("../expressError");
+const db = require("../db.js");
+const { BadRequestError, NotFoundError, ExpressError } = require("../expressError");
 const { sqlForPartialUpdate } = require("../helpers/sql");
 
 /** Related functions for companies. */
@@ -141,15 +141,46 @@ class Company {
     if (!company) throw new NotFoundError(`No company: ${handle}`);
   }
 
-  static async filter(qString) {
-    const params = new URLSearchParams(qString);
-    const name = params.get('name');
-    const max = params.get('maxEmployees');
-    const min = params.get('minEmployees');
-    let baseString = "SELECT handle, name, num_employees, description FROM companies";
-    let numParams = 0
-    if(name){baseString += `WHERE name=$1`; numParams++}
-    if(max){baseString}
+  // Filter companies by name, max numEmployees, or min numEmployees. 
+  // Three params must be included, pass in undefnied or null for params that are not being used
+  static async filter(name, min, max) {
+    if(max && min && min >= max){
+      throw new BadRequestError("There must be a range between min and max")
+    }
+    if(!name && !min && !max){
+      throw new BadRequestError("Must include paramters to filter by")
+    }
+    let baseString = "SELECT handle, name, num_employees, description FROM companies WHERE ";
+    let params = []
+    if(name){
+      baseString += `name=$1 `; 
+      params.push(name)
+    };
+    if(max){
+      params.push(max)
+      let frag = ''
+      if(params.length > 1){ frag += 'AND ' }
+      frag += `num_employees < $${params.length} `
+      baseString += frag
+    }
+    if(min){
+      params.push(min)
+      let frag = ''
+      if(params.length > 1){ frag += 'AND ' }
+      frag += `num_employees > $${params.length} `
+      baseString += frag
+    }
+    console.log(baseString)
+    let companies = await db.query(baseString, params);
+    console.log("Companies: ", companies)
+    let res = {
+      "name" : name,
+      "maxEmployees" : max,
+      "minEmployees" : min,
+      "companies" : companies.rows
+    }
+    return res
+    
   }
 }
 

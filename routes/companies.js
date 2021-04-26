@@ -4,6 +4,7 @@
 
 const jsonschema = require("jsonschema");
 const express = require("express");
+const url = require('url')
 
 const { BadRequestError } = require("../expressError");
 const { ensureLoggedIn } = require("../middleware/auth");
@@ -59,6 +60,29 @@ router.get("/", async function (req, res, next) {
   }
 });
 
+
+/** GET /filter?name=name&max=max&min=min {[{company}, {company}, {company}, {company}]}
+ * 
+ * Filters companies by provided criteria
+ * 
+ * Criteria passed in through the query string
+ * 
+ * Returns an array of companies that match provided criteria
+ * 
+ * Authorization: login
+ */
+
+ router.get("/filter", ensureLoggedIn, async function (req, res, next){
+  const params = req.query
+  let filteredCompanies;
+  try {
+    filteredCompanies = await Company.filter(params.name, params.min, params.max)
+    return res.send(filteredCompanies)
+  } catch (err) {
+    return next(err);
+  }
+})
+
 /** GET /[handle]  =>  { company }
  *
  *  Company is { handle, name, description, numEmployees, logoUrl, jobs }
@@ -66,6 +90,8 @@ router.get("/", async function (req, res, next) {
  *
  * Authorization required: none
  */
+
+
 
 router.get("/:handle", async function (req, res, next) {
   try {
@@ -101,6 +127,9 @@ router.patch("/:handle", ensureLoggedIn, async function (req, res, next) {
     return next(err);
   }
 });
+
+
+
 
 /** DELETE /[handle]  =>  { deleted: handle }
  *
