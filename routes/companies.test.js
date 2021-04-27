@@ -150,7 +150,6 @@ describe("GET /companies/filter?", function(){
   test("Filters companies", async function(){
     const resp = await request(app)
         .get('/companies/filter?minEmployees=3&maxEmployees=10')
-    console.log("RESPONSE: ", resp)
     expect(resp)
     expect(resp.body.companies.length).toBe(1)
     expect(resp.body.companies[0]).toHaveProperty('name', 'C3')

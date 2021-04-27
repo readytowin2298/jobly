@@ -161,7 +161,6 @@ class Company {
       params.push(name)
     };
     if(max){
-      console.log("MAX: ", max)
       params.push((max + 1))
       let frag = ''
       if(params.length > 1){ frag += 'AND ' }
@@ -169,7 +168,6 @@ class Company {
       baseString += frag
     }
     if(min){
-      console.log("MIN: ", min)
       params.push((min - 1))
       let frag = ''
       if(params.length > 1){ frag += 'AND ' }
