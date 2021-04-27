@@ -187,6 +187,50 @@ describe("update", function () {
   });
 });
 
+describe("filter", function() {
+  test("works", async function() {
+    let name = undefined;
+    let min = 3
+    let max = undefined;
+    const res = await Company.filter(name, min, max)
+
+    expect(res)
+    expect(res.companies.length).toBe(1)
+    expect(res.companies[0]).toHaveProperty('name', 'C3')
+  })
+  test("no errors if no company found", async function(){
+    let name = "fake name";
+    let min = 5;
+    let max  = undefined;
+    const res = await Company.filter(name, min, max);
+
+    expect(res)
+    expect(res.companies.length).toBe(0)
+  })
+  test("Error for invalid params", async function() {
+    let name = undefined;
+    let min = 6;
+    let max = 5;
+    try{
+      await Company.filter(name, min, max);
+      fail();
+    } catch(err) {
+      expect(err instanceof BadRequestError).toBeTruthy();
+    }
+  })
+  test("Error for no params", async function() {
+    let name = undefined;
+    let max = undefined;
+    let min = undefined;
+    try{
+      await Company.filter(name, min, max);
+      fail()
+    } catch(err) {
+      expect(err instanceof BadRequestError).toBeTruthy();
+    }
+  })
+})
+
 /************************************** remove */
 
 describe("remove", function () {

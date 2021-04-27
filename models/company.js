@@ -157,6 +157,7 @@ class Company {
       params.push(name)
     };
     if(max){
+      max++
       params.push(max)
       let frag = ''
       if(params.length > 1){ frag += 'AND ' }
@@ -164,15 +165,14 @@ class Company {
       baseString += frag
     }
     if(min){
+      min--
       params.push(min)
       let frag = ''
       if(params.length > 1){ frag += 'AND ' }
       frag += `num_employees > $${params.length} `
       baseString += frag
     }
-    console.log(baseString)
     let companies = await db.query(baseString, params);
-    console.log("Companies: ", companies)
     let res = {
       "name" : name,
       "maxEmployees" : max,
