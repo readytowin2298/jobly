@@ -170,7 +170,6 @@ class Company {
     }
     if(min){
       console.log("MIN: ", min)
-      min--
       params.push((min - 1))
       let frag = ''
       if(params.length > 1){ frag += 'AND ' }

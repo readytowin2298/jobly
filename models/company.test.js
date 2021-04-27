@@ -23,7 +23,7 @@ describe("create", function () {
     name: "New",
     description: "New Description",
     numEmployees: 1,
-    logoUrl: "http://new.img",
+    logoUrl: "http://new.img"
   };
 
   test("works", async function () {
@@ -40,7 +40,7 @@ describe("create", function () {
         name: "New",
         description: "New Description",
         num_employees: 1,
-        logo_url: "http://new.img",
+        logo_url: "http://new.img"
       },
     ]);
   });
