@@ -143,6 +143,25 @@ describe("GET /companies/:handle", function () {
   });
 });
 
+// GET /companies/filter?
+
+describe("GET /companies/filter?", function(){
+  test("Filters companies", async function(){
+    const resp = await request(app)
+        .get('/companies/filter?minEmployees=3&maxEmployees=10')
+    console.log("RESPONSE: ", resp)
+    expect(resp)
+    expect(resp.body.companies[0]).toHaveProperty('name', 'C3')
+    expect(resp.statusCode).toEqual(200)
+  });
+  test("Error message for no params", async function(){
+    const resp = await request(app).get('/companies/filter');
+
+    expect(resp.statusCode).toBe(400);
+    expect(resp.body.message)
+  })
+})
+
 /************************************** PATCH /companies/:handle */
 
 describe("PATCH /companies/:handle", function () {

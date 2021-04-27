@@ -72,11 +72,11 @@ router.get("/", async function (req, res, next) {
  * Authorization: login
  */
 
- router.get("/filter", ensureLoggedIn, async function (req, res, next){
+ router.get("/filter", async function (req, res, next){
   const params = req.query
   let filteredCompanies;
   try {
-    filteredCompanies = await Company.filter(params.name, params.min, params.max)
+    filteredCompanies = await Company.filter(params.name, params.minEmployees, params.maxEmployees)
     return res.send(filteredCompanies)
   } catch (err) {
     return next(err);

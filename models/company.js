@@ -144,8 +144,12 @@ class Company {
   // Filter companies by name, max numEmployees, or min numEmployees. 
   // Three params must be included, pass in undefnied or null for params that are not being used
   static async filter(name, min, max) {
-    if(max && min && min >= max){
-      throw new BadRequestError("There must be a range between min and max")
+    max = Number(max);
+    min = Number(min)
+    if(max && min ){
+      if(max <= min){
+        throw new BadRequestError("There must be a range between min and max")
+      }
     }
     if(!name && !min && !max){
       throw new BadRequestError("Must include paramters to filter by")
@@ -157,16 +161,17 @@ class Company {
       params.push(name)
     };
     if(max){
-      max++
-      params.push(max)
+      console.log("MAX: ", max)
+      params.push((max + 1))
       let frag = ''
       if(params.length > 1){ frag += 'AND ' }
       frag += `num_employees < $${params.length} `
       baseString += frag
     }
     if(min){
+      console.log("MIN: ", min)
       min--
-      params.push(min)
+      params.push((min - 1))
       let frag = ''
       if(params.length > 1){ frag += 'AND ' }
       frag += `num_employees > $${params.length} `
