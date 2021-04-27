@@ -114,7 +114,6 @@ router.get("/:handle", async function (req, res, next) {
  */
 
 router.patch("/:handle", ensureAdmin, async function (req, res, next) {
-  console.log("AUTH: ", res.locals.user)
   try {
     const validator = jsonschema.validate(req.body, companyUpdateSchema);
     if (!validator.valid) {

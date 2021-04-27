@@ -12,6 +12,8 @@ const {
   commonAfterEach,
   commonAfterAll,
   u1Token,
+  u2Token,
+  u3Token
 } = require("./_testCommon");
 
 beforeAll(commonBeforeAll);
@@ -22,7 +24,7 @@ afterAll(commonAfterAll);
 /************************************** POST /users */
 
 describe("POST /users", function () {
-  test("works for users: create non-admin", async function () {
+  test("works for admin: create non-admin", async function () {
     const resp = await request(app)
         .post("/users")
         .send({
@@ -33,7 +35,7 @@ describe("POST /users", function () {
           email: "new@email.com",
           isAdmin: false,
         })
-        .set("authorization", `Bearer ${u1Token}`);
+        .set("authorization", `Bearer ${u2Token}`);
     expect(resp.statusCode).toEqual(201);
     expect(resp.body).toEqual({
       user: {
@@ -46,7 +48,7 @@ describe("POST /users", function () {
     });
   });
 
-  test("works for users: create admin", async function () {
+  test("works for admin: create admin", async function () {
     const resp = await request(app)
         .post("/users")
         .send({
@@ -57,7 +59,7 @@ describe("POST /users", function () {
           email: "new@email.com",
           isAdmin: true,
         })
-        .set("authorization", `Bearer ${u1Token}`);
+        .set("authorization", `Bearer ${u2Token}`);
     expect(resp.statusCode).toEqual(201);
     expect(resp.body).toEqual({
       user: {
@@ -90,7 +92,7 @@ describe("POST /users", function () {
         .send({
           username: "u-new",
         })
-        .set("authorization", `Bearer ${u1Token}`);
+        .set("authorization", `Bearer ${u2Token}`);
     expect(resp.statusCode).toEqual(400);
   });
 
@@ -105,18 +107,32 @@ describe("POST /users", function () {
           email: "not-an-email",
           isAdmin: true,
         })
-        .set("authorization", `Bearer ${u1Token}`);
+        .set("authorization", `Bearer ${u2Token}`);
     expect(resp.statusCode).toEqual(400);
   });
+  test("unauth for non-admin", async function(){
+    const resp = await request(app)
+        .post('/users')
+        .send({
+          username: "u-nope",
+          firstName: "First-new",
+          lastName: "Last-newL",
+          password: "password-new",
+          email: "not-an-email",
+          isAdmin: true,
+        })
+        .set("authorization", `Bearer ${u1Token}`);
+    expect(resp.statusCode).toBe(401)
+  })
 });
 
 /************************************** GET /users */
 
 describe("GET /users", function () {
-  test("works for users", async function () {
+  test("works for admin", async function () {
     const resp = await request(app)
         .get("/users")
-        .set("authorization", `Bearer ${u1Token}`);
+        .set("authorization", `Bearer ${u2Token}`);
     expect(resp.body).toEqual({
       users: [
         {
@@ -157,7 +173,7 @@ describe("GET /users", function () {
     await db.query("DROP TABLE users CASCADE");
     const resp = await request(app)
         .get("/users")
-        .set("authorization", `Bearer ${u1Token}`);
+        .set("authorization", `Bearer ${u2Token}`);
     expect(resp.statusCode).toEqual(500);
   });
 });
@@ -165,18 +181,18 @@ describe("GET /users", function () {
 /************************************** GET /users/:username */
 
 describe("GET /users/:username", function () {
-  test("works for users", async function () {
+  test("works for admin", async function () {
     const resp = await request(app)
         .get(`/users/u1`)
-        .set("authorization", `Bearer ${u1Token}`);
+        .set("authorization", `Bearer ${u2Token}`);
     expect(resp.body).toEqual({
       user: {
         username: "u1",
         firstName: "U1F",
         lastName: "U1L",
         email: "user1@user.com",
-        isAdmin: false,
-      },
+        isAdmin: false
+      }
     });
   });
 
@@ -192,12 +208,25 @@ describe("GET /users/:username", function () {
         .set("authorization", `Bearer ${u1Token}`);
     expect(resp.statusCode).toEqual(404);
   });
+  test("Fails for non-admin different user", async function () {
+    const resp = await request(app)
+        .get('/users/u1')
+        .set("authorization", `Bearer ${u3Token}`)
+    expect(resp.statusCode).toBe(401)
+  });
+  test("Lets user get their own info", async function () {
+    const resp = await request(app)
+        .get('/users/u1')
+        .set("authorization", `Bearer ${u1Token}`);
+    // expect(resp.statusCode).toBe(200);
+    expect(resp.body.user).toHaveProperty('username', 'u1')
+  })
 });
 
 /************************************** PATCH /users/:username */
 
 describe("PATCH /users/:username", () => {
-  test("works for users", async function () {
+  test("works for user being edited", async function () {
     const resp = await request(app)
         .patch(`/users/u1`)
         .send({
@@ -230,7 +259,7 @@ describe("PATCH /users/:username", () => {
         .send({
           firstName: "Nope",
         })
-        .set("authorization", `Bearer ${u1Token}`);
+        .set("authorization", `Bearer ${u2Token}`);
     expect(resp.statusCode).toEqual(404);
   });
 
@@ -263,6 +292,33 @@ describe("PATCH /users/:username", () => {
     const isSuccessful = await User.authenticate("u1", "new-password");
     expect(isSuccessful).toBeTruthy();
   });
+  test("admin can edit any user", async function(){
+    const resp = await request(app)
+        .patch(`/users/u1`)
+        .send({
+          firstName: "New",
+        })
+        .set("authorization", `Bearer ${u2Token}`);
+    expect(resp.statusCode).toBe(200)
+    expect(resp.body).toEqual({
+      user: {
+        username: "u1",
+        firstName: "New",
+        lastName: "U1L",
+        email: "user1@user.com",
+        isAdmin: false,
+      },
+    });
+  })
+  test("no-admin can't edit another user", async function(){
+    const resp = await request(app)
+        .patch(`/users/u1`)
+        .send({
+          firstName: 42,
+        })
+        .set("authorization", `Bearer ${u3Token}`);
+    expect(resp.statusCode).toEqual(400);
+  })
 });
 
 /************************************** DELETE /users/:username */

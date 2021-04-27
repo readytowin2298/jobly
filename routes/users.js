@@ -71,7 +71,7 @@ router.get("/", ensureAdmin, async function (req, res, next) {
 router.get("/:username", ensureLoggedIn, async function (req, res, next) {
   try {
     const user = await User.get(req.params.username);
-    if(!res.locals.user.isAdmin || res.locals.user.username !== user.username) throw new UnauthorizedError();
+    if(!res.locals.user.isAdmin && res.locals.user.username !== user.username) throw new UnauthorizedError();
     return res.json({ user });
   } catch (err) {
     return next(err);
@@ -96,6 +96,7 @@ router.patch("/:username", ensureLoggedIn, async function (req, res, next) {
       const errs = validator.errors.map(e => e.stack);
       throw new BadRequestError(errs);
     }
+    if(!res.locals.user.isAdmin && res.locals.user.username !== req.params.username) throw new UnauthorizedError();
 
     const user = await User.update(req.params.username, req.body);
     return res.json({ user });
