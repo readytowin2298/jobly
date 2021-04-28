@@ -16,22 +16,33 @@ class Job {
    * */
 
 
-    static async create(title, salary, equity, companyHandle) {
+    static async create(title, salary, equity = 0, companyHandle) {
+        if(!title || !salary || !companyHandle){
+            return new BadRequestError("Please include all parameters")
+        }
+        
         const duplicateCheck = await db.query(
             `SELECT *
              FROM jobs
              WHERE company_handle = $1
              AND title = $2`,
-            [companyHandle, title]);
+            [companyHandle, title]).catch((err)=>{
+                throw new ExpressError("Error communicating with Database", 500)
+            });
         if (duplicateCheck.rows[0])
-            {throw new BadRequestError(`Duplicate job foud`)};
+            {throw new BadRequestError(`Duplicate job found`)};
         const result = await db.query(`
         INSERT INTO jobs
         (title, salary, equity, company_handle)
         VALUES ($1, $2, $3, $4)
-        RETUNRING title, salary, equity, company_handle AS "companyHandle"`,
-        [title, salary, equity, companyHandle])
+        RETURNING id, title, salary, equity, company_handle AS "companyHandle"`,
+        [title, salary, equity, companyHandle]).catch((err)=>{
+            throw new ExpressError("Error communicating with Database", 500)
+        });
         
         return result.rows[0]
     }
 }
+
+
+module.exports = Job
